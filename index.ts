@@ -80,7 +80,7 @@ function moveVertical(dy: number) {
   }
 }
 
-function update() {
+function handelInputs() {
   while (inputs.length > 0) {
     let current = inputs.pop();
     if (current === Input.LEFT)
@@ -92,15 +92,17 @@ function update() {
     else if (current === Input.DOWN)
       moveVertical(1);
   }
+}
 
+function updateMap() {
   for (let y = map.length - 1; y >= 0; y--) {
     for (let x = 0; x < map[y].length; x++) {
       if ((map[y][x] === Tile.STONE || map[y][x] === Tile.FALLING_STONE)
-        && map[y + 1][x] === Tile.AIR) {
+          && map[y + 1][x] === Tile.AIR) {
         map[y + 1][x] = Tile.FALLING_STONE;
         map[y][x] = Tile.AIR;
       } else if ((map[y][x] === Tile.BOX || map[y][x] === Tile.FALLING_BOX)
-        && map[y + 1][x] === Tile.AIR) {
+          && map[y + 1][x] === Tile.AIR) {
         map[y + 1][x] = Tile.FALLING_BOX;
         map[y][x] = Tile.AIR;
       } else if (map[y][x] === Tile.FALLING_STONE) {
@@ -110,6 +112,12 @@ function update() {
       }
     }
   }
+}
+
+function update() {
+  // draw() 와 동일하게 메서드를 추출 함!, 우선 여기서는 같은 추상화에 있다고 보고 있으므로 추가 작업 종료 함!
+  handelInputs();
+  updateMap();
 }
 
 function drawMap(g: CanvasRenderingContext2D) {
@@ -139,15 +147,18 @@ function drawPlayer(g: CanvasRenderingContext2D) {
   g.fillRect(playerx * TILE_SIZE, playery * TILE_SIZE, TILE_SIZE, TILE_SIZE);
 }
 
-function draw() {
+function createGraphics() {
   let canvas = document.getElementById("GameCanvas") as HTMLCanvasElement;
   let g = canvas.getContext("2d");
-
   g.clearRect(0, 0, canvas.width, canvas.height);
 
+  return g;
+}
+
+function draw() { // 기존 draw메서드 안에서 g의 메서드를 호출하기도하고, g를 매개변수로 받아서처리 하므로 동일 수준 추상화를 위반했음!
+  let g = createGraphics();
   drawMap(g);
   drawPlayer(g);
-
 }
 
 function gameLoop() {
