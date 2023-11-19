@@ -80,42 +80,49 @@ function moveVertical(dy: number) {
   }
 }
 
+function handleInput(current: Input | Input.UP | Input.DOWN | Input.RIGHT) {
+  if (current === Input.LEFT)
+    moveHorizontal(-1);
+  else if (current === Input.RIGHT)
+    moveHorizontal(1);
+  else if (current === Input.UP)
+    moveVertical(-1);
+  else if (current === Input.DOWN)
+    moveVertical(1);
+}
+
 function handelInputs() {
   while (inputs.length > 0) {
     let current = inputs.pop();
-    if (current === Input.LEFT)
-      moveHorizontal(-1);
-    else if (current === Input.RIGHT)
-      moveHorizontal(1);
-    else if (current === Input.UP)
-      moveVertical(-1);
-    else if (current === Input.DOWN)
-      moveVertical(1);
+    handleInput(current); // updateTitle()과 동일한 if ~ elseIf단위까지 메서드로 추출 했음!
+  }
+}
+
+function updateTitle(y: number, x: number) {
+  if ((map[y][x] === Tile.STONE || map[y][x] === Tile.FALLING_STONE)
+      && map[y + 1][x] === Tile.AIR) {
+    map[y + 1][x] = Tile.FALLING_STONE;
+    map[y][x] = Tile.AIR;
+  } else if ((map[y][x] === Tile.BOX || map[y][x] === Tile.FALLING_BOX)
+      && map[y + 1][x] === Tile.AIR) {
+    map[y + 1][x] = Tile.FALLING_BOX;
+    map[y][x] = Tile.AIR;
+  } else if (map[y][x] === Tile.FALLING_STONE) {
+    map[y][x] = Tile.STONE;
+  } else if (map[y][x] === Tile.FALLING_BOX) {
+    map[y][x] = Tile.BOX;
   }
 }
 
 function updateMap() {
   for (let y = map.length - 1; y >= 0; y--) {
     for (let x = 0; x < map[y].length; x++) {
-      if ((map[y][x] === Tile.STONE || map[y][x] === Tile.FALLING_STONE)
-          && map[y + 1][x] === Tile.AIR) {
-        map[y + 1][x] = Tile.FALLING_STONE;
-        map[y][x] = Tile.AIR;
-      } else if ((map[y][x] === Tile.BOX || map[y][x] === Tile.FALLING_BOX)
-          && map[y + 1][x] === Tile.AIR) {
-        map[y + 1][x] = Tile.FALLING_BOX;
-        map[y][x] = Tile.AIR;
-      } else if (map[y][x] === Tile.FALLING_STONE) {
-        map[y][x] = Tile.STONE;
-      } else if (map[y][x] === Tile.FALLING_BOX) {
-        map[y][x] = Tile.BOX;
-      }
+      updateTitle(y, x); // if문은 그 자체로 하나의 작업이며, 포함된 elseIf구문의 전체가 한 작업의 단위이다.
     }
   }
 }
 
 function update() {
-  // draw() 와 동일하게 메서드를 추출 함!, 우선 여기서는 같은 추상화에 있다고 보고 있으므로 추가 작업 종료 함!
   handelInputs();
   updateMap();
 }
@@ -155,7 +162,7 @@ function createGraphics() {
   return g;
 }
 
-function draw() { // 기존 draw메서드 안에서 g의 메서드를 호출하기도하고, g를 매개변수로 받아서처리 하므로 동일 수준 추상화를 위반했음!
+function draw() {
   let g = createGraphics();
   drawMap(g);
   drawPlayer(g);
