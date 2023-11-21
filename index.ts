@@ -14,8 +14,43 @@ enum Tile {
   KEY2, LOCK2
 }
 
-enum Input {
-  UP, DOWN, LEFT, RIGHT
+interface Input {
+  isRight(): boolean;
+  isLeft(): boolean;
+  isUp(): boolean;
+  isDown(): boolean;
+  handle(): void;
+}
+
+class Right implements Input {
+  isRight(): boolean { return true; }
+  isLeft(): boolean { return false; }
+  isUp(): boolean { return false; }
+  isDown(): boolean { return false; }
+  handle() { moveHorizontal(1); }
+}
+class Left implements Input {
+  isRight(): boolean { return false; }
+  isLeft(): boolean { return true; }
+  isUp(): boolean { return false; }
+  isDown(): boolean { return false; }
+  handle() { moveHorizontal(-1); }
+}
+
+class Up implements Input {
+  isRight(): boolean { return false; }
+  isLeft(): boolean { return false; }
+  isUp(): boolean { return true; }
+  isDown(): boolean { return false; }
+  handle() { moveVertical(-1); }
+}
+
+class Down implements Input {
+  isRight(): boolean { return false; }
+  isLeft(): boolean { return false; }
+  isUp(): boolean { return false; }
+  isDown(): boolean { return true; }
+  handle() { moveVertical(1); }
 }
 
 let playerx = 1;
@@ -80,21 +115,14 @@ function moveVertical(dy: number) {
   }
 }
 
-function handleInput(current: Input | Input.UP | Input.DOWN | Input.RIGHT) {
-  if (current === Input.LEFT)
-    moveHorizontal(-1);
-  else if (current === Input.RIGHT)
-    moveHorizontal(1);
-  else if (current === Input.UP)
-    moveVertical(-1);
-  else if (current === Input.DOWN)
-    moveVertical(1);
+function handleInput(input: Input) {
+  input.handle()
 }
 
 function handelInputs() {
   while (inputs.length > 0) {
     let current = inputs.pop();
-    handleInput(current); // updateTitle()과 동일한 if ~ elseIf단위까지 메서드로 추출 했음!
+    handleInput(current);
   }
 }
 
@@ -117,7 +145,7 @@ function updateTitle(y: number, x: number) {
 function updateMap() {
   for (let y = map.length - 1; y >= 0; y--) {
     for (let x = 0; x < map[y].length; x++) {
-      updateTitle(y, x); // if문은 그 자체로 하나의 작업이며, 포함된 elseIf구문의 전체가 한 작업의 단위이다.
+      updateTitle(y, x);
     }
   }
 }
@@ -187,9 +215,9 @@ const UP_KEY = "ArrowUp";
 const RIGHT_KEY = "ArrowRight";
 const DOWN_KEY = "ArrowDown";
 window.addEventListener("keydown", e => {
-  if (e.key === LEFT_KEY || e.key === "a") inputs.push(Input.LEFT);
-  else if (e.key === UP_KEY || e.key === "w") inputs.push(Input.UP);
-  else if (e.key === RIGHT_KEY || e.key === "d") inputs.push(Input.RIGHT);
-  else if (e.key === DOWN_KEY || e.key === "s") inputs.push(Input.DOWN);
+  if (e.key === LEFT_KEY || e.key === "a") inputs.push(new Left());
+  else if (e.key === UP_KEY || e.key === "w") inputs.push(new Up());
+  else if (e.key === RIGHT_KEY || e.key === "d") inputs.push(new Right());
+  else if (e.key === DOWN_KEY || e.key === "s") inputs.push(new Down());
 });
 
